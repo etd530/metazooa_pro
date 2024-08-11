@@ -4,13 +4,39 @@
 import taxopy
 import random as rd
 
+#### FUNS ####
+def name2taxid():
+	"""
+	Prompts the user to input a taxon name and creates a taxon object from it. If the name is incorrect, it keepts asking until it is a valid name or until the execution is stopped by Ctrl+C.
+
+	"""	
+	while 1:
+		try:
+			proposed_taxname = input("Enter a taxon name:\n")
+			# Transform species name to taxid
+			proposed_taxid = taxopy.taxid_from_name(proposed_taxname, taxdb)[0] # Note this will NOT work with homonyms, e.g. Pieris is a genus of both plants and butterflies
+			return proposed_taxname
+		except:
+			if 'proposed_taxname' not in locals():
+				print("proposed_taxname is not defined")
+				exit()
+			else:
+				del proposed_taxname
+				print("That is not a valid species name. Please revise spelling an try again:")
+
+
+
 #### MAIN ####
 # Read taxo library
-print("Welcome to Metazooa Pro version! In this game you have to guess a species. If you provide the wrong species, the name of the nearest node shared by the mystery species and your species in the NCBI taxnonmy database is returned as a hint.")
-limit_taxon = input("The game with all taxa can be absurdly hard. Do you want to limit the game to some set of species? If so, enter the name of the group to limit to:\n")
-
+print("Welcome to Metazooa Pro version!")
+print("In this game you have to guess a species. If you provide the wrong species, the name of the nearest node shared by the mystery species and your species in the NCBI taxnonmy database is returned as a hint.")
 print("Please wait while we load the database...")
 taxdb = taxopy.TaxDb(nodes_dmp = "nodes.dmp", names_dmp = "names.dmp", merged_dmp = "merged.dmp")
+print("Databse loaded!")
+
+# Select clade to limit the game to
+print("The game with all taxa can be absurdly hard. Do you want to limit the game to some set of species? If so, enter the name of the group to limit to.")
+limit_taxon = name2taxid()
 
 # Find max taxid available
 # i = 1 # we start at one which is the taxid for the root of the tree of life (i.e. the LUCA)
@@ -43,19 +69,7 @@ while 1:
 # Ask for user input of species name
 attempts = 10
 while attempts:
-	while 1:
-		try:
-			proposed_taxname = input("Enter a species name:\n")
-			# Transform species name to taxid
-			proposed_taxid = taxopy.taxid_from_name(proposed_taxname, taxdb)[0] # Note this will NOT work with homonyms, e.g. Pieris is a genus of both plants and butterflies
-			break
-		except:
-			if 'proposed_taxname' not in globals():
-				print("proposed_taxname is not defined")
-				exit()
-			else:
-				del proposed_taxname
-				print("That is not a valid species name. Please revise spelling an try again:")
+	proposed_taxname = name2taxid()
 
 	# Tranform proposed taxid to taxon
 	proposed_taxon = taxopy.Taxon(proposed_taxid, taxdb)
