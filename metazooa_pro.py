@@ -5,9 +5,15 @@ import taxopy
 import random as rd
 
 #### FUNS ####
-def name2taxid():
+def name2taxid(taxdb):
 	"""
-	Prompts the user to input a taxon name and creates a taxon object from it. If the name is incorrect, it keeps asking until it is a valid name or until the execution is stopped by Ctrl+C.
+	Prompts the user to input a taxon name and gets its taxid from the database. If the name is not found in the database, it keeps asking until it is a valid name or until the execution is stopped by Ctrl+D.
+
+	Arguments:
+		taxdb: A taxdb object from the taxopy library, contanining the NCBI taxonomy database or an equivalently formatted custom database.
+
+	Returns:
+		A string containing the proposed taxon's name.
 
 	"""
 	while 1:
@@ -15,19 +21,24 @@ def name2taxid():
 			proposed_taxname = input("Enter a taxon name:\n")
 			# Transform species name to taxid
 			proposed_taxid = taxopy.taxid_from_name(proposed_taxname, taxdb)[0] # Note this will NOT work with homonyms, e.g. Pieris is a genus of both plants and butterflies
-			return proposed_taxname
+			print(proposed_taxname)
+			print(proposed_taxid)
+			return proposed_taxid
 		except:
-			if 'proposed_taxname' not in locals():
-				print("proposed_taxname is not defined")
-				exit()
-			else:
-				del proposed_taxname
-				print("That is not a valid species name. Please revise spelling an try again:")
+			del proposed_taxname
+			print("That is not a valid species name. Please revise spelling an try again:")
 
 
 def find_max_taxid(taxdb, delnodes):
 	"""
 	Given a taxdb object and the path to a file of deleted node numbers, find the maximum valid taxid.
+
+	Arguments:
+		taxdb: A taxdb object from the taxopy library, contanining the NCBI taxonomy database or an equivalently formatted custom database.
+		delnodes: The name of a file containing the deleted nodes from the NCBI taxonomy database.
+
+	Returns:
+		The highest valid taxid in the database.
 	"""
 	# Read delnodes into a list
 	delnodes_list = []
@@ -51,7 +62,7 @@ def find_max_taxid(taxdb, delnodes):
 				print("Maximum taxid is: %s" %str(max_taxid))
 				return(max_taxid)
 
-if __name__ == '__main___':
+if __name__ == '__main__':
 	#### VARS ####
 	delnodes = "delnodes.dmp" # file with deleted nodes
 
@@ -65,8 +76,8 @@ if __name__ == '__main___':
 	print("Databse loaded!")
 
 	# Select clade to limit the game to
-	print("The game with all taxa can be absurdly hard. Do you want to limit the game to some set of species? If so, enter the name of the group to limit to.")
-	limit_taxon = name2taxid()
+	print("The game with all taxa can be absurdly hard. Do you want to limit the game to some set of species? If so, enter the name of the group to limit to:") # HAVE TO FIND HOW TO ENTER ROOT IN CASE SOMEONE IS CRAZY
+	limit_taxon = name2taxid(taxdb)
 
 	# Find max taxid available
 
@@ -76,6 +87,7 @@ if __name__ == '__main___':
 
 
 	# Generate random taxid for the mystery species, make sure it is a species and not a genus or whatever
+	print("Please wait while we decide on a mystery species for you to find...")
 	while 1:
 		try:
 			mystery_taxid = rd.randint(1, max_taxid)
@@ -86,9 +98,10 @@ if __name__ == '__main___':
 			pass
 
 	# Ask for user input of species name
+	print("Done! Now you can start guessing the species:")
 	attempts = 10
 	while attempts:
-		proposed_taxname = name2taxid()
+		proposed_taxid = name2taxid(taxdb)
 
 		# Tranform proposed taxid to taxon
 		proposed_taxon = taxopy.Taxon(proposed_taxid, taxdb)
