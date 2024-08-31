@@ -21,8 +21,6 @@ def name2taxid(taxdb):
 			proposed_taxname = input("Enter a taxon name:\n")
 			# Transform species name to taxid
 			proposed_taxid = taxopy.taxid_from_name(proposed_taxname, taxdb)[0] # Note this will NOT work with homonyms, e.g. Pieris is a genus of both plants and butterflies
-			print(proposed_taxname)
-			print(proposed_taxid)
 			return proposed_taxid
 		except:
 			del proposed_taxname
